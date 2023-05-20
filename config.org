@@ -1,0 +1,586 @@
+#+TITLE: My Emacs Config
+Place your private configuration here! Remember, you do not need to run 'doom
+sync' after modifying this file!
+
+Some functionality uses this to identify you, e.g. GPG configuration, email
+clients, file templates and snippets.
+#+BEGIN_SRC emacs-lisp
+(setq user-full-name "Georg R. Pollak" user-mail-address "pollakgeorg@gmail.com")
+#+END_SRC
+
+#+RESULTS:
+: pollakgeorg@gmail.com
+
+Starts the Emacs server
+;; (server-start)
+
+Here are some additional functions/macros that could help you configure Doom:
+
+- `load!' for loading external *.el files relative to this one
+- `use-package!' for configuring packages
+- `after!' for running code after a package has loaded
+- `add-load-path!' for adding directories to the `load-path', relative to
+  this file. Emacs searches the `load-path' when you load packages with
+  `require' or `use-package'.
+- `map!' for binding new keys
+
+To get information about any of these functions/macros, move the cursor over
+the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
+This will open documentation for it, including demos of how they are used.
+
+You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
+they are implemented.
+* Basic Setup
+** Startup buffer
+#+BEGIN_SRC emacs-lisp
+(setq initial-buffer-choice "~/org/todo.org")
+#+END_SRC
+
+#+RESULTS:
+: ~/org/uni.org
+
+** Go TO File
+#+BEGIN_SRC emacs-lisp
+(load-file (expand-file-name (concat doom-private-dir "lisp/general/open-file-at-cursor-immediate-done.el")))
+(with-eval-after-load 'evil-maps
+  (define-key evil-visual-state-map (kbd "g f") 'open-file-at-cursor-immediate-done)
+  (define-key evil-normal-state-map (kbd "g f") 'open-file-at-cursor-immediate-done)
+)
+#+END_SRC
+
+#+RESULTS:
+: open-file-at-cursor-immediate-done
+
+** Set default mode for scatch buffer
++ set mode of scratch buffer to org mode
+#+BEGIN_SRC emacs-lisp
+(setq initial-major-mode 'org-mode)
+#+END_SRC
+
+** Diffing the init.el with the doom example
+#+BEGIN_SRC emacs-lisp
+ (defun doom/ediff-init-and-example ()
+  "ediff the current `init.el' with the example in doom-emacs-dir"
+  (interactive)
+  (ediff-files (concat doom-private-dir "init.el")
+               (concat doom-emacs-dir "init.example.el")))
+
+(define-key! help-map
+  "di"   #'doom/ediff-init-and-example
+)
+#+END_SRC
+
+#+RESULTS:
+
+** Set indent width
+#+begin_src emacs-lisp
+(setq-default tab-width 4)
+#+end_src
+
+#+RESULTS:
+: 4
+
+** Add own lisp directories to path
+#+BEGIN_SRC emacs-lisp :results none
+(add-to-list 'load-path (expand-file-name "~/.doom.d/lisp/"))
+#+END_SRC
+** Leetcode
+#+begin_src
+(use-package! leetcode
+:config
+    (progn
+        (setq leetcode-prefer-language "cpp")
+        (setq leetcode-save-solutions t)
+        (setq leetcode-directory "~/leetcode"))
+)
+#+end_src
+** Buffers TODO
+Switch lead b b to switch-buffer-project and not buffer in gneral
+#+BEGIN_SRC emacs-lisp
+(map! :leader
+      :desc "New journal entry"
+      "b b" #'projectile-switch-to-buffer)
+#+END_SRC
+
+* Evil
+#+BEGIN_SRC emacs-lisp
+;; (after! evil-snipe (evil-snipe-mode -1))
+(remove-hook 'doom-first-input-hook #'evil-snipe-mode)
+#+END_SRC
+
+#+RESULTS:
+
+* Peep Dired
+#+begin_src elisp
+;; Add the j and k keys to move to next and previous files in peed-dired mode
+(evil-define-key 'normal peep-dired-mode-map
+  (kbd "j") 'peep-dired-next-file
+  (kbd "k") 'peep-dired-prev-file)
+(add-hook 'peep-dired-hook 'evil-normalize-keymaps)
+
+;; Add the key binding SPC d p to toggle peep-dired-mode while in dired (you can add the key binding you like)
+(map! :leader
+       (:after dired
+        (:map dired-mode-map
+         :desc "peep mode" "d p" #'peep-dired)))
+#+end_src
+* Image Dired
+* Completion
+** Helm
+*** Describes keybindings of current mode
+#+BEGIN_SRC emacs-lisp
+(use-package! helm-descbinds
+  :hook (helm-mode . helm-descbinds-mode)
+  :bind (
+         ("C-h b" . helm-descbinds)
+        )
+)
+#+END_SRC
+
+#+RESULTS:
+: helm-descbinds
+
+** Ivy
+https://sam217pa.github.io/2016/09/13/from-helm-to-ivy/
+
+* Themes
+    There are two ways to load a theme. Both assume the theme is installed and
+    available. You can either set ~doom-theme~ or manually load a theme with the
+    ~load-theme~ function.
+    #+BEGIN_SRC emacs-lisp
+    ;; (setq doom-theme 'doom-one)
+    (load-theme 'sanityinc-tomorrow-eighties t)
+    ;; (load-theme 'base16-tomorrow-night-eighties t)
+    #+END_SRC
+
+    #+RESULTS:
+    : t
+
+
+** TODO Themes: clean up add conditional lisp variable
+# ,#+BEGIN_SRC emacs-lisp
+# ;; (setq doom-theme 'doom-one)
+#        ;; (use-package moe-theme                     ; Theme
+#        ;; :ensure t
+#        ;; :config
+#        ;; (load-theme 'moe-dark t))
+#         ;(use-package zenburn-theme
+#         ;:ensure t
+#         ;:config
+#         ;(load-theme 'zenburn t))
+#         ;(use-package tangotango-theme
+#         ;:ensure t)
+#          ;; (load-theme 'sanityinc-tomorrow-day t))
+#      ;;  (use-package material-theme
+#      ;;       :ensure t
+#      ;;       :init
+#      ;;
+#      ;; (load-theme 'material t))
+#           ;(use-package ample-theme
+#           ;:init (progn (load-theme 'ample t t)
+#           ;            (load-theme 'ample-flat t t)
+#           ;            (load-theme 'ample-light t t)
+#           ;            (enable-theme 'ample-flat))
+#           ;:defer t
+#           ;:ensure t)
+#           ;; (use-package farmhouse-theme
+#           ;;  :ensure t
+#           ;;  :init
+#           ;;     (load-theme 'farmhouse-dark t))
+# #+END_SRC
+* Font
+ Doom exposes five (optional) variables for controlling fonts in Doom. Here
+ are the three important ones:
+
+ + `doom-font'
+ + `doom-variable-pitch-font'
+ + `doom-big-font' -- used for `doom-big-font-mode'; use this for presentations or streaming.
+    They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
+    font string. You generally only need these two:
+   #+BEGIN_SRC emacs-lisp
+    ;; (setq doom-font (font-spec :family "monospace" :size 12 :weight 'semi-light)
+    ;;       doom-variable-pitch-font (font-spec :family "sans" :size 13))
+   #+END_SRC
+
+   #+RESULTS:
+   : #<font-spec nil nil sans nil nil nil nil nil 13 nil nil nil nil>
+
+* Line Number and Which Function
+This determines the style of line numbers in effect. If set to `nil', line
+numbers are disabled. For relative line numbers, set this to `relative'.
+** Relative Line Numbers
+#+BEGIN_SRC emacs-lisp
+(setq display-line-numbers-type 'relative)
+(global-display-line-numbers-mode)
+#+END_SRC
+** Which Function Mode
+#+BEGIN_SRC emacs-lisp
+(use-package which-func
+  :commands which-function-mode
+  :demand
+  :config (which-function-mode))
+#+END_SRC
+#+RESULTS:
+: t
+
+* C/C++/Cpp
+** Compiler Explorer - RMSbolt
+** LSP-mode with clangd
+#+BEGIN_SRC elisp
+(setq lsp-clients-clangd-args '("-j=3"
+                                "--background-index"
+                                "--clang-tidy"
+                                "--completion-style=detailed"
+                                "--header-insertion=iwyu"))
+(after! lsp-clangd (set-lsp-priority! 'clangd 2))
+(use-package lsp-mode
+  :hook ((prog-mode . lsp-deferred))
+  :commands (lsp lsp-deferred)
+  :config
+  (progn
+    (lsp-register-client
+     (make-lsp-client :new-connection (lsp-tramp-connection "clangd")
+                      :major-modes '(c-mode c++-mode)
+                      :remote? t
+                      :server-id 'clangd-remote))))
+(add-to-list 'auto-mode-alist '("\\.hpp.base\\'" . cpp-mode))
+(add-to-list 'auto-mode-alist '("\\.cpp.base\\'" . cpp-mode))
+(add-hook 'emacs-lisp-mode #'lsp)
+#+END_SRC
+
+#+RESULTS:
+| lsp-deferred | lsp | hl-todo-mode | display-line-numbers-mode | highlight-numbers-mode | vi-tilde-fringe-mode |
+
+This will both set your clangd flags and choose clangd as the default server (if
+it is the last =set-eglot-client! 'cc-mode= in your config).
+** Documentation
+*** Gendoxy
+;; Documentation generation
+#+BEGIN_SRC emacs-lisp
+(load "gendoxy.el")
+#+END_SRC
+
+#+RESULTS:
+: t
+
+* Leetcode
+#+BEGIN_SRC elisp
+;; (setq leetcode-save-solutions t)
+;; (setq leetcode-directory "~/leetcode")
+(use-package leetcode
+    :config
+    (setq leetcode-path "~/leetcode/"
+          leetcode-language "c++")
+)
+#+END_SRC
+
+#+RESULTS:
+: ~/leetcode
+
+* Org
+If you use `org' and don't want your org files in the default location below,
+change `org-directory'. It must be set before org loads!
+#+BEGIN_SRC emacs-lisp
+(setq org-hide-emphasis-markers t)
+(setq org-directory "~/org/")
+(setq org-agenda-files (list "~/org" "~/.doom.d/"))
+#+END_SRC
+
+#+RESULTS:
+| ~/org | ~/.doom.d/ |
+
+* Projectile
+#+begin_src emacs-lisp
+(use-package projectile
+  :config
+  (setq projectile-globally-ignored-directories
+        '(".git"
+          ".ccls-cache"
+          "docs/"
+          ".stack-work"
+          ".clang-format"
+          ".clang-format"
+          ".cquery_cached_index"))
+  )
+#+end_src
+
+#+RESULTS:
+: t
+
+;;;;* LaTeX
+;;;;** PDF Viewer
+;;;;TODO: delte from init.el and fix here
+;;;;NOTE: set the variable but somehow does not get recognized
+;;;;
+;;;;#+BEGIN_SRC emacs-lisp
+;;;;(setq +latex-viewers '(evince))
+;;;;#+END_SRC
+;;;;
+;;;;** AUCTEX
+;;;;
+;;;;Helper function that can be used inside dir-locals.el to query master file automatically
+;;;;#+BEGIN_SRC emacs-lisp
+;;;;(defun get-tex-master ()
+;;;;  "Sets the Tex-Master to projectile-project-root/formulary.tex"
+;;;;  ;; (setq TeX-master)
+;;;;  (concat (projectile-project-root) "formulary.tex")
+;;;;)
+;;;;#+END_SRC
+;;;;
+;;;;#+RESULTS:
+;;;;: get-tex-master
+;;;;#+BEGIN_SRC emacs-lisp
+;;;;(setq LaTeX-indent-level 4)
+;;;;;; TODO: somehow returns void variable formulary
+;;;;(use-package tex
+;;;;    :config
+;;;;    (setq-default TeX-master "formulary"))
+;;;;#+END_SRC
+;;;;*** Automatic nomenclature command execution
+;;;;#+BEGIN_SRC emacs-lisp :results none
+;;;;;; nomenclature for latex
+;;;;(eval-after-load "tex"
+;;;;  '(add-to-list 'TeX-command-list
+;;;;                '("Nomenclature" "makeindex %s.nlo -s nomencl.ist -o %s.nls"
+;;;;                  (lambda (name command file)
+;;;;                    (TeX-run-compile name command file)
+;;;;                    (TeX-process-set-variable file 'TeX-command-next TeX-command-default))
+;;;;                  nil t :help "Create nomenclature file")))
+;;;;#+END_SRC
+;;;;
+;;;;** Basic Configurations
+;;;;#+BEGIN_SRC emacs-lisp
+;;;;(setq +latex-viewers '(evince))
+;;;;#+END_SRC
+;;;;
+;;;;#+RESULTS:
+;;;;| evince |
+;;;;
+;;;;** px-preview LaTeX in any mode
+;;;;#+BEGIN_SRC emacs-lisp
+;;;;(use-package px)
+;;;;#+END_SRC
+;;;;
+;;;;#+RESULTS:
+;;;;: px
+;;;;
+;;;;** Yassnippet
+;;;;*** Helper Functions
+;;;;**** Automatic Label Creation for Theorems
+;;;;TODO finish this sometime
+;;;;#+BEGIN_SRC emacs-lisp
+;;;;(load-file (expand-file-name (concat doom-private-dir "lisp/latex/labelcreation.el")))
+;;;;#+END_SRC
+
+#+RESULTS:
+: t
+** Rainbow-mode
+#+BEGIN_SRC emacs-lisp
+;; TODO: append .cfg files to rainbow-latex-colors-major-mode-list somehow
+(use-package rainbow-mode)
+#+END_SRC
+** Citations with RefTex
+#+begin_src emacs-lisp
+;; (setq reftex-default-bibliography "/home/pollakg/zotero/zotero_bibliography.bib") ;
+#+end_src
+
+* Zotero
+#+begin_src emacs-lisp
+(after! citar
+  (setq! citar-bibliography '("/home/pollakg/zotero/zotero_bibliography.bib"))
+  ;; (setq! citar-notes-paths '("/home/pollakg/zotero/Notes"))
+  (setq! citar-at-point-function 'embark-act)
+  (defun citar-file-open (file)  ;; open pdf in external viewer
+    "Open FILE."
+    (if (member (file-name-extension file) '("html" "pdf"))
+        (citar-file-open-external (expand-file-name file))
+      (funcall citar-file-open-function (expand-file-name file))))
+  (citar-filenotify-setup '(LaTeX-mode-hook org-mode-hook)) ;; autosync .bib file
+
+)
+#+end_src
+
+#+RESULTS:
+
+* COMMENT Mail
+Each path is relative to `+mu4e-mu4e-mail-path',
+which is [[file:~/.mail/][~/.mail]] by default To send mails we need to configure ~smtp~
+** ETH Mail
+#+BEGIN_SRC emacs-lisp
+(set-email-account! "ETH"
+  '((mu4e-sent-folder       . "/eth/Sent")
+    (mu4e-drafts-folder     . "/eth/Drafts")
+    (mu4e-trash-folder      . "/eth/Trash")
+    ;; TODO (mu4e-refile-folder     . "/gmail/[Gmail]")
+    (smtpmail-smtp-user     . "pollakg@student.ethz.ch")
+    (user-mail-address      . "pollakg@student.ethz.ch")    ;; only needed for mu < 1.4
+    (mu4e-compose-signature . "---\nGeorg R. Pollak"))
+  t)
+(setq mu4e-view-show-images t)          ;
+#+END_SRC
+
+#+RESULTS:
+: t
+* Python
+** Documentation
+*** Sphinx
+#+BEGIN_SRC emacs-lisp
+(use-package sphinx-doc
+:bind (:map sphinx-doc-mode-map
+            ("SPC C-d" . sphinx-doc))
+)
+#+END_SRC
+** ELPY - Emacs Lisp Python Environment
+Emacs Lisp Python Environment
+Switched to lsp
+#+BEGIN_SRC emacs-lisp
+;; (use-package elpy
+;; :config
+;;     (progn (elpy-enable)
+;;         (setq python-shell-interpreter "ipython"
+;;         python-shell-interpreter-args "-i --simple-prompt"
+;;         python-shell-prompt-detect-failure-warning nil)
+;;         (add-to-list 'python-shell-completion-native-disabled-interpreters "jupyter")
+;;     )
+;; )
+;; TODO:  (add-hook 'python-mode-hook 'jedi:setup)
+;(setq python-shell-interpreter "ipython5" python-shell-interpreter-args "--simple-prompt --pprint")
+;(elpy-use-ipython) #+END_SRC #+RESULTS: : /usr/local/anaconda3/bin/anaconda ** EPC
+;;Requirement for Jedi
+;#+BEGIN_SRC emacs-lisp
+;(use-package epc ;:defer t)
+;(setq jedi:server-command '("/Users/pollakg/.emacs.d/elpa/jedi-core-20170121.610/jediepcserver.py"))
+(setq +python-ipython-repl-args '("-i" "--simple-prompt" "--no-color-info"))
+(setq +python-jupyter-repl-args '("--simple-prompt"))
+(setq python-shell-interpreter "ipython" python-shell-interpreter-args "-i --simple-prompt" python-shell-prompt-detect-failure-warning nil)
+#+END_SRC
+* ESS and R
+Auto scroll for ESS
+#+BEGIN_SRC emacs-lisp
+  (setq comint-prompt-read-only t)
+  (setq comint-scroll-to-bottom-on-input t)
+  (setq comint-scroll-to-bottom-on-output t)
+  (setq comint-move-point-for-output t)
+#+END_SRC
+
+#+RESULTS:
+: t
+** R markdown
+*** Outline
+Replace some of the functionality of markdown-mode
+#+begin_src emacs-lisp
+(use-package outline
+  :custom
+  (outline-regexp "[#]+"))
+#+end_src
+*** Polymode
+#+begin_src emacs-lisp
+(use-package polymode
+  :ensure t
+  :commands (R)
+)
+#+end_src
+
+#+RESULTS:
+*** R-Polymode
+#+begin_src emacs-lisp
+(use-package poly-R
+  :ensure t
+)
+#+end_src
+* Git
+** Git Gutter
+Show diffs directly within the file
+#+BEGIN_SRC emacs-lisp
+;; ignore all spaces
+(custom-set-variables
+ '(git-gutter:diff-option "-w"))
+#+END_SRC
+
+#+RESULTS:
+
+* Tramp
+** Git Integration
+#+begin_src emacs-lisp
+;; (add-to-list 'tramp-remote-path "/cluster/apps/git/2.11.0/x86_64/bin/git")
+#+end_src
+
+* Matlab
+  #+BEGIN_SRC emacs-lisp :results none
+    ;; (setq matlab-shell-command "/usr/local/bin/matlab")
+    ;; (setq matlab-shell-command "matlab")
+    ;; (setq matlab-shell-command-switches (list "-nodisplay"))
+    (use-package matlab-mode
+    :mode ("\\.m$" . matlab-mode)
+    ;(use-package matlab-load)
+    :config
+    (progn
+        (setq matlab-shell-command "matlab")
+        (setq matlab-shell-command-switches (quote ("-nodisplay -nosplash")))
+        ;(setq matlab-server-executable "/path/to/matlab/binary")
+        (setq matlab-indent-function t)
+    )
+    (eval-after-load 'company
+        '(add-to-list 'company-backends 'company-matlab))
+        (setq matlab-shell-command-switches (quote ("-nodisplay -nosplash")))
+        (eval-after-load 'flycheck
+        '(require 'flycheck-matlab-mlint)))
+  #+end_SRC
+
+* hl-todo
+Add Colored Keywords to your code.
+#+BEGIN_SRC emacs-lisp
+;; (after! hl-todo
+;;     (setq hl-todo-keyword-faces
+;;         '(("IMPORTANT" . "#967E1E")
+;;           ("DONE" . "#afd8af")
+;;           )))
+(use-package hl-todo
+:hook (prog-mode . hl-todo-mode)
+:config
+(setq hl-todo-highlight-punctuation ":"
+        hl-todo-keyword-faces
+        '(("TODO"       warning bold)
+        ("FIXME"      error bold)
+        ("HACK"       font-lock-constant-face bold)
+        ("REVIEW"     font-lock-keyword-face bold)
+        ("DONE"       font-lock-keyword-face bold)
+        ("IMPORTANT"  font-lock-keyword-face bold)
+        ("NOTE"       success bold)
+        ("DEPRECATED" font-lock-doc-face bold))))
+#+END_SRC
+
+
+#+RESULTS:
+| lsp-deferred | hl-todo-mode | display-line-numbers-mode | highlight-numbers-mode | vi-tilde-fringe-mode | editorconfig-major-mode-hook |
+
+* My Packages
+#+BEGIN_SRC emacs-lisp
+;; (load! "lisp/label_images_by_score")
+(use-package! label-images-by-score-mode
+  :load-path "lisp/label-images-by-score-mode"
+  ;; :bind
+  ;; (("k" . label-images-by-score-next)
+  ;;  ("j" . label-images-by-score-prev)
+  ;;  ("1" . label-images-by-score-score1)
+  ;;  ("2" . label-images-by-score-score2)
+  ;;  ("3" . label-images-by-score-score3)
+  ;;  ("4" . label-images-by-score-score4)
+  ;;  ("5" . label-images-by-score-score5)
+  ;;  ("q" . label-images-by-score-quit))
+  )
+;; (map! :after label-images-by-score-mode
+;;       :map label-images-by-score-mode-map
+;;       "k" #'label-images-by-score-next
+;;       "j" #'label-images-by-score-prev
+;;       "1" #'label-images-by-score-score1
+;;       "2" #'label-images-by-score-score2
+;;       "3" #'label-images-by-score-score3
+;;       "4" #'label-images-by-score-score4
+;;       "5" #'label-images-by-score-score5
+;;       "q" #'label-images-by-score-quit
+;; )
+#+end_src
+
+#+RESULTS:
+: label-images-by-score-mode
