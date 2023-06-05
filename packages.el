@@ -74,6 +74,8 @@
 (package! helm-descbinds)
 (package! rainbow-mode) ;; display rgb colors
 (package! matlab-mode)
+;; Themes
+(package! zenburn-theme)
 ;; Diffing
 (package! ztree)
 ;; C++ -> assembly

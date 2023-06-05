@@ -33,7 +33,7 @@ they are implemented.
 * Basic Setup
 ** Startup buffer
 #+BEGIN_SRC emacs-lisp
-(setq initial-buffer-choice "~/org/todo.org")
+;; (setq initial-buffer-choice "~/org/todo.org")
 #+END_SRC
 
 #+RESULTS:
@@ -151,10 +151,16 @@ https://sam217pa.github.io/2016/09/13/from-helm-to-ivy/
     ;; (setq doom-theme 'doom-one)
     (load-theme 'sanityinc-tomorrow-eighties t)
     ;; (load-theme 'base16-tomorrow-night-eighties t)
+    ;; (load-theme 'zenburn t)
+    ;; Load up doom-palenight for the System Crafters look
+    ;; (setq doom-theme 'doom-palenight t)
+    ;; NOTE: These settings might not be ideal for your machine, tweak them as needed!
+    (set-face-attribute 'default nil :font "JetBrains Mono" :weight 'light :height 180)
+    (set-face-attribute 'fixed-pitch nil :font "JetBrains Mono" :weight 'light :height 190)
+    (set-face-attribute 'variable-pitch nil :font "Iosevka Aile" :weight 'light :height 1.3)
     #+END_SRC
 
     #+RESULTS:
-    : t
 
 
 ** TODO Themes: clean up add conditional lisp variable
@@ -215,10 +221,10 @@ numbers are disabled. For relative line numbers, set this to `relative'.
 #+END_SRC
 ** Which Function Mode
 #+BEGIN_SRC emacs-lisp
-(use-package which-func
-  :commands which-function-mode
-  :demand
-  :config (which-function-mode))
+;; (use-package which-func
+;;   :commands which-function-mode
+;;   :demand
+;;   :config (which-function-mode))
 #+END_SRC
 #+RESULTS:
 : t
@@ -450,10 +456,122 @@ Switched to lsp
 ;#+BEGIN_SRC emacs-lisp
 ;(use-package epc ;:defer t)
 ;(setq jedi:server-command '("/Users/pollakg/.emacs.d/elpa/jedi-core-20170121.610/jediepcserver.py"))
-(setq +python-ipython-repl-args '("-i" "--simple-prompt" "--no-color-info"))
+(setq +python-ipython-repl-args '("-i" "--simple-prompt"))
 (setq +python-jupyter-repl-args '("--simple-prompt"))
 (setq python-shell-interpreter "ipython" python-shell-interpreter-args "-i --simple-prompt" python-shell-prompt-detect-failure-warning nil)
 #+END_SRC
+*** FlyCheck
+#+begin_src elisp
+(use-package flycheck
+    :ensure t
+    :config
+    (setq flycheck-python-flake8-executable "flake8")
+    (setq-default flycheck-disabled-checkers '(lsp c/c++-gcc))
+    ;; (add-to-list 'flycheck-checkers 'python-ruff)
+    (set-face-attribute 'flycheck-error nil :underline '(:color "red160" :style wave))
+)
+#+end_src
+
+#+RESULTS:
+: t
+**** Python Ruff
+#+begin_src elisp
+;; (require 'flycheck)
+;; (flycheck-define-checker python-ruff
+;;   "A Python syntax and style checker using the ruff utility.
+;;     To override the path to the ruff executable, set
+;;     `flycheck-python-ruff-executable'.
+;;     See URL `http://pypi.python.org/pypi/ruff'."
+;;   :command ("ruff"
+;;             "--format=text"
+;;             (eval (when buffer-file-name
+;;                     (concat "--stdin-filename=" buffer-file-name)))
+;;             "-")
+;;   :standard-input t
+;;   :error-filter (lambda (errors)
+;;                   (let ((errors (flycheck-sanitize-errors errors)))
+;;                     (seq-map #'flycheck-flake8-fix-error-level errors)))
+;;   :error-patterns
+;;   ((warning line-start
+;;             (file-name) ":" line ":" (optional column ":") " "
+;;             (id (one-or-more (any alpha)) (one-or-more digit)) " "
+;;             (message (one-or-more not-newline))
+;;             line-end))
+;;   :modes python-mode)
+
+;; (add-to-list 'flycheck-checkers 'python-ruff)
+
+;; (provide 'flycheck-ruff)
+#+end_src
+
+#+RESULTS:
+: flycheck-ruff
+*** Python Import Sort - Pyisort
+#+begin_src elis
+(add-hook 'before-save-hook 'py-isort-before-save)
+#+end_src
+
+** Debugging
+#+begin_src emacs-lisp
+(after! dap-mode
+  (setq dap-python-debugger 'debugpy))
+(setq dap-auto-configure-mode t)
+;; if you installed debugpy, you need to set this
+;; https://github.com/emacs-lsp/dap-mode/issues/306
+(setq dap-python-debugger 'debugpy)
+(map! :map dap-mode-map
+      :leader
+      :prefix ("d" . "dap")
+      ;; basics
+      :desc "dap next"          "n" #'dap-next
+      :desc "dap step in"       "i" #'dap-step-in
+      :desc "dap step out"      "o" #'dap-step-out
+      :desc "dap continue"      "c" #'dap-continue
+      :desc "dap hydra"         "h" #'dap-hydra
+      :desc "dap debug restart" "r" #'dap-debug-restart
+      :desc "dap debug"         "s" #'dap-debug
+      :desc "dap dissconnect"   "d" #'dap-disconnect
+
+      ;; debug
+      :prefix ("dd" . "Debug")
+      :desc "dap debug recent"  "r" #'dap-debug-recent
+      :desc "dap debug last"    "l" #'dap-debug-last
+
+      ;; eval
+      :prefix ("de" . "Eval")
+      :desc "eval"                "e" #'dap-eval
+      :desc "eval region"         "r" #'dap-eval-region
+      :desc "eval thing at point" "s" #'dap-eval-thing-at-point
+      :desc "add expression"      "a" #'dap-ui-expressions-add
+      :desc "remove expression"   "d" #'dap-ui-expressions-remove
+
+      :prefix ("db" . "Breakpoint")
+      :desc "dap breakpoint toggle"      "b" #'dap-breakpoint-toggle
+      :desc "dap breakpoint delete all"  "k" #'dap-breakpoint-delet-all
+      :desc "dap breakpoint condition"   "c" #'dap-breakpoint-condition
+      :desc "dap breakpoint hit count"   "h" #'dap-breakpoint-hit-condition
+      :desc "dap breakpoint log message" "l" #'dap-breakpoint-log-message
+
+      ;; toogle pane
+      :prefix ("du" . "UI")
+      :desc "dap ui breakpoints"         "b" #'dap-ui-breakpoins
+      :desc "dap ui repel"               "r" #'dap-ui-repl
+      :desc "dap ui locals"              "l" #'dap-ui-locals
+      :desc "dap ui globals"             "g" #'dap-ui-globals
+      :desc "dap ui sessions"            "s" #'dap-ui-sessions
+      :desc "dap ui expressions"         "e" #'dap-ui-expressions
+      :desc "dap ui control"             "c" #'dap-ui-conrol
+      :desc "dap ui tooltip"             "t" #'dap-ui-tooltip)
+
+(unless (display-graphic-p)
+    (set-face-background 'dap-ui-marker-face "color-166") ; An orange background for the line to execute
+    (set-face-attribute 'dap-ui-marker-face nil :inherit nil) ; Do not inherit other styles
+    (set-face-background 'dap-ui-pending-breakpoint-face "blue") ; Blue background for breakpoints line
+    (set-face-attribute 'dap-ui-verified-breakpoint-face nil :inherit 'dap-ui-pending-breakpoint-face)))
+#+end_src
+
+#+RESULTS:
+
 * ESS and R
 Auto scroll for ESS
 #+BEGIN_SRC emacs-lisp

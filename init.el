@@ -93,7 +93,7 @@
        ;; (lsp +eglot)
        ;;ansible
        ;;biblio            ; Writes a PhD for you (citation needed)
-       debugger          ; FIXME stepping through code, to help you add bugs
+       (debugger +lsp)          ; FIXME stepping through code, to help you add bugs
        ;;direnv
        docker
        editorconfig      ; let someone else argue about tabs vs spaces
@@ -110,7 +110,7 @@
        ;;rgb               ; creating color strings
        ;;taskrunner        ; taskrunner for all your projects
        terraform         ; infrastructure as code
-       ;;tmux              ; an API for interacting with tmux
+       tmux              ; an API for interacting with tmux
        tree-sitter       ; syntax and parsing, sitting in a tree...
        ;;upload            ; map local to remote projects via ssh/ftp
 
@@ -167,7 +167,7 @@
        ;; (python +lsp +tree-sitter)            ; beautiful is better than ugly
        ;; (python +lsp +mspyls)            ; beautiful is better than ugly
        ;; (python +lsp +poetry +pyls +tree-sitter)            ; beautiful is better than ugly
-       (python +lsp +poetry +pyright +tree-sitter +pyen)            ; beautiful is better than ugly
+       (python +lsp +poetry +pyls +tree-sitter +pyen +conda)            ; beautiful is better than ugly
        ;;qt                ; the 'cutest' gui framework ever
        ;;racket            ; a DSL for DSLs
        ;;raku              ; the artist formerly known as perl6
